@@ -174,6 +174,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         numAgents = gameState.getNumAgents()
 
         def minimax(state, agentIndex, pacmanMovesSoFar):
+            # 以下三种均为递归结束情况
             if state.isWin() or state.isLose():
                 return (self.evaluationFunction(state), None)
 
@@ -193,10 +194,12 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
                     nextAgent = (agentIndex + 1) % numAgents
                     nextPacmanMoves = pacmanMovesSoFar
+                    # 若后续为pacman
                     if nextAgent == 0:
                         nextPacmanMoves += 1
 
                     val, _ = minimax(successor, nextAgent, nextPacmanMoves)
+                    # pacman取最大值
                     if val > bestValue:
                         bestValue = val
                         bestAction = action
@@ -209,16 +212,18 @@ class MinimaxAgent(MultiAgentSearchAgent):
                     successor = state.generateSuccessor(agentIndex, action)
                     nextAgent = (agentIndex + 1) % numAgents
                     nextPacmanMoves = pacmanMovesSoFar
+                    # 若下一节点为pacman
                     if nextAgent == 0:
                         nextPacmanMoves += 1
 
                     val, _ = minimax(successor, nextAgent, nextPacmanMoves)
+                    # ghost取最小值
                     if val < worstValue:
                         worstValue = val
                         worstAction = action
 
                 return (worstValue, None)
-
+        # 初始化阶段
         value, action = minimax(gameState, 0, 0)
         return action if action is not None else Directions.STOP
 
@@ -252,6 +257,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 for action in legalActions:
                     successor = state.generateSuccessor(agentIndex, action)
                     value = max(value, alphabeta(1, depth, successor, alpha, beta))
+                    # 剪枝
                     if value > beta:
                         return value;
                     alpha = max(alpha, value)
@@ -262,17 +268,19 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 value = float('inf')
                 nextAgent = agentIndex + 1
                 nextDepth = depth
+                # 若为最后一个ghost
                 if agentIndex == numAgents - 1:
                     nextAgent = 0
                     nextDepth += 1
                 for action in legalActions:
                     successor = state.generateSuccessor(agentIndex, action)
                     value = min(value, alphabeta(nextAgent, nextDepth, successor, alpha, beta))
+                    # 剪枝
                     if value < alpha:
                         return value
                     beta = min(beta, value)
                 return value
-
+        #初始化过程
         alpha = float('-inf')
         beta = float('inf')
         bestValue = float('-inf')
@@ -336,7 +344,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                     except Exception:
                         # 跳过非法动作
                         continue
-
+                # 取平均值
                 return sum(values)/len(values) if values else self.evaluationFunction(state)
 
         bestAction=max(gameState.getLegalActions(0),key=lambda action:expectimax(gameState.generateSuccessor(0,action),0,1))
@@ -355,10 +363,15 @@ def betterEvaluationFunction(currentGameState: GameState):
     >
     """
     "*** YOUR CODE HERE ***"
+    # 食物列表
     foodList=currentGameState.getFood().asList()
+    # 当前位置
     pacmanPos=currentGameState.getPacmanPosition()
+    # 当前得分
     score=currentGameState.getScore()
+    # 胶囊位置
     capsules=currentGameState.getCapsules()
+    # ghost情况
     ghosts=currentGameState.getGhostStates()
 
 #     food
